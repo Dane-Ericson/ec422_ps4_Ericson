@@ -104,3 +104,21 @@ forecast::dm.test(liquor_errs$arima, liquor_errs$snaive, h = 1, power = 2)
 #Our D-M test between our ARIMA and ETS models had DM statistic -2.9062, and p-value 0.004042. Our second D-M test between our ARIMA and seasonal random walk models had DM statistic -10.755, and p-value less than 2.2e-16. With our DM test results, we can conclude that the ARIMA model produces more accurate forecasts in a statistically significant manner. If I were the liquor store, I would implement the ARIMA model to best forecast month-ahead sales. 
 
 ##Part 3
+
+liquor_combo_fc <- liquor_cv_fit |>
+  mutate(combo = (arima + ets) / 2) |>
+  forecast(h = 1)
+
+liquor_combo_fc |>
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE)) |> knitr::kable(digits = 2)
+
+
+#The combo model is better than the seasonal random walk and ETS model by both errors, but is worse than the ARIMA model by both errors.
+
+cor(liquor_errs$arima, liquor_errs$ets)
+
+#Our correlation value came back as 0.878, meaning that the errors of the ARIMA and ETS models are very correlated. This, in combination with our DM test results showing that the ARIMA model was more accurate, likely is the reason for the ARIMA beating the combination model, as this means that the errors will likely not cancel one another out due to the errors often being in the same direction. 
+
+
+##Part 4
+
