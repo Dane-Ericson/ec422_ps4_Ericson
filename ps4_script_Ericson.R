@@ -245,3 +245,127 @@ forecast::dm.test(e_var4, e_bvar, h = 1, power = 2)
 
 
 #Our p-value for GDP growth is 0.035 with a DM stat of 2.14, suggesting that our BVAR was better in a significant way. For inflation, the p-value was 0.1489, indicating that the difference in expected loss is not statistically significant at the 5% level. This reaffirms the statment from 4.3b regarding the results, as it supports the claim that the model with the lower RMSE may not forecast better in the future.
+
+
+##Part 5
+
+md_raw <- read_csv("data/fredmd_2026-09.csv", show_col_types = FALSE)
+tcode <- unlist(md_raw[1, -1])
+md <- md_raw[-1, ] |> mutate(date = as.Date(sasdate, "%m/%d/%Y"))
+
+transform_series <- function(x, code) {
+  d <- function(v) c(NA, diff(v))
+  switch(as.character(code),
+         "1" = x,                      # level
+         "2" = d(x),                   # first difference
+         "3" = d(d(x)),                # second difference
+         "4" = log(x),                 # log
+         "5" = 100 * d(log(x)),        # growth rate
+         "6" = 100 * d(d(log(x))),     # change in the growth rate
+         "7" = d(x / dplyr::lag(x) - 1))
+}
+
+
+fm <- map2_dfc(md[names(tcode)], tcode, transform_series) |>
+  mutate(date = md$date, .before = 1) |>
+  filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+
+fm <- fm[, colSums(is.na(fm)) == 0]
+
+dim(fm)
+
+
+tcode[c("INDPRO", "PAYEMS", "CPIAUCSL", "FEDFUNDS")]
+
+
+#INDPRO is transformed using the first difference of logged values. 100(log(X)t - log(x)t-1).
+
+#PAYEMS is transformed the same way as INDPRO.
+
+#CPIAUCSL is transformed using the second difference of logged values.
+
+#FEDFUNDS is transformed using just the first differences of values, with no log. 
+
+#FEDFUNDS and INDPRO likely use different transformations because INDPRO is a quantity, so we are more interested in the percentage growth rates, while FEDFUNDS is expressed as an interest rate, so we want to observe changes in percentage points rather than percentage growth.
+
+
+#5.2
+
+Z <- fm |> select(-date) |> as.matrix()
+
+pc <- prcomp(scale(Z))
+
+summary(pc)$importance[, 1:5]
+
+summary(pc)$importance[
+  "Cumulative Proportion", 3]
+
+#The first three factors explain 29.45 percent of the variance.
+
+
+F1 <- pc$x[, 1] * sign(cor(pc$x[, 1], fm$INDPRO))
+
+tibble(date = fm$date, F1 = F1) |>
+  ggplot(aes(date, F1)) +
+  geom_line() +
+  labs(title = "First Factor from FRED-MD", x = NULL, y = NULL) +
+  theme_minimal()
+
+sort(abs(cor(pc$x[, 1], Z))[1, ], decreasing = TRUE)[1:8]
+sort(abs(cor(pc$x[, 2], Z))[1, ], decreasing = TRUE)[1:8]
+
+#The first component seems to capture economic activity and production, correlating closely with other measures of economic activity like PAYEMS and INDPRO. The second factor seems to capture inflation and price changes, correlation closely with other consumer price variables like CPIAUSL. 
+
+#5.3
+
+ip <- fm$INDPRO
+n <- nrow(Z)
+init <- which(fm$date == as.Date("1989-12-01"))
+
+e_ar <- NULL
+e_fa <- NULL
+for (T in init:(n - 1)) {
+  F_T <- prcomp(scale(Z[1:T, ]))$x[, 1:3]         # factors using data through T
+  d <- data.frame(y_next = ip[2:T], y = ip[1:(T - 1)], F_T[1:(T - 1), ])
+  new <- data.frame(y = ip[T], t(F_T[T, ]))
+  e_ar <- c(e_ar, ip[T + 1] - predict(lm(y_next ~ y, d), new))
+  e_fa <- c(e_fa, ip[T + 1] - predict(lm(y_next ~ ., d), new))
+}
+
+c(RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)))
+
+# Estimating the factors using the full sample would incorporate information from future periods into prior forecasts, leading to information leakage and making forecasts appear better than they are. 
+
+#5.4
+
+direct_race <- function(series, h = 12, r = 3) {
+  lv <- md |>
+    mutate(log_x = log(.data[[series]]),
+           g = 100 * (log_x - lag(log_x))) |>
+    filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+  yh <- 100 * (lead(lv$log_x, h) - lv$log_x)      # growth over the next h months
+  g  <- lv$g                                      # growth over the latest month
+  
+  e_ar <- NULL
+  e_fa <- NULL
+  for (T in init:(n - h)) {
+    F_T <- prcomp(scale(Z[1:T, ]))$x[, 1:r, drop = FALSE]
+    i <- 1:(T - h)
+    d <- data.frame(yh = yh[i], g = g[i], F_T[i, , drop = FALSE])
+    new <- data.frame(g = g[T], F_T[T, , drop = FALSE])
+    e_ar <- c(e_ar, yh[T] - predict(lm(yh ~ g, d), new))
+    e_fa <- c(e_fa, yh[T] - predict(lm(yh ~ ., d), new))
+  }
+  tibble(series, forecasts = length(e_ar),
+         RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)),
+         MAE_AR = mean(abs(e_ar)), MAE_FA = mean(abs(e_fa)),
+         DM_pvalue = forecast::dm.test(e_ar, e_fa, h = h, power = 2,
+                                       varestimator = "bartlett")$p.value)
+}
+
+direct_race("CPIAUCSL")
+
+direct_race("CPIAUCSL") |>
+  print(width = Inf)
+
+#Both the MAE and RMSE are lowered in Factor Augmented model than the AR model, with a 10.43% reduction in RMSE. These results are statistically significant at the 5% level with a p-value of 0.0004.
