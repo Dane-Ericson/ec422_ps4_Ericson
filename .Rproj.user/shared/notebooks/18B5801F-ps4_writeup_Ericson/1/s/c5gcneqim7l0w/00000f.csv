@@ -1,2 +1,0 @@
-"0","autoplot(liquor, sales) +"
-"0","  labs(title = ""Monthly US liquor sales"", y = ""Sales (millions of dollars)"", x = ""Year"")"

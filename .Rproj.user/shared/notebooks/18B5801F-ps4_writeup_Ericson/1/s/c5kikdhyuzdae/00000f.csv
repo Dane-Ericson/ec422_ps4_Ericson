@@ -1,6 +1,0 @@
-"0","#| echo: false"
-"0","cor(liquor_errs$arima, liquor_errs$ets)"
-"1","[1]"
-"1"," 0.8782931"
-"1","
-"

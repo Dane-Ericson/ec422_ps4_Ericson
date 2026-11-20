@@ -1,4 +1,0 @@
-"0","#|echo: false"
-"0","N <- nrow(y)"
-"0","origins <- 120:(N - 1)"
-"0","actual <- y[121:N, ]"

@@ -3,7 +3,7 @@
     "path": "C:/Users/danee/Downloads/R/ec422_ps4_Ericson/ps4_writeup_Ericson.qmd",
     "project_path": "ps4_writeup_Ericson.qmd",
     "type": "quarto_markdown",
-    "hash": "536589455",
+    "hash": "604514364",
     "contents": "",
     "dirty": false,
     "created": 1795131733560.0,
@@ -15,18 +15,18 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "342,0",
+        "cursorPosition": "194,0",
         "scrollLine": "0",
         "docOutlineVisible": "1",
         "rmdVisualCollapsedChunks": "",
-        "rmdVisualModeLocation": "12956:13620.6669921875"
+        "rmdVisualModeLocation": "6180:5351.33349609375"
     },
     "folds": "",
-    "lastKnownWriteTime": 1795136990,
+    "lastKnownWriteTime": 1795137368,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1795136991015,
+    "last_content_update": 1795137368603,
     "read_only": false,
     "read_only_alternatives": []
 }

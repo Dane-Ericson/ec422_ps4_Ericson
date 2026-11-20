@@ -1,4 +1,0 @@
-"0","liquor_fit |>"
-"0","  select(arima) |>"
-"0","  augment() |>"
-"0","  features(.innov, ljung_box, lag = 24, dof = 6)"

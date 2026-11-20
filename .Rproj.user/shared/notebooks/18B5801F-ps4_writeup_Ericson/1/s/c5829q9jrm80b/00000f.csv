@@ -1,3 +1,4 @@
+"0","#|echo: false"
 "0","liquor_cv_fit <- readRDS("
 "0","  ""results/liquor_cv_fit.rds"""
 "0",")"

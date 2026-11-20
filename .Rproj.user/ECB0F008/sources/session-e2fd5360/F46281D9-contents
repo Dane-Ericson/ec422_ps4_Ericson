@@ -16,6 +16,7 @@ execute:
 <https://github.com/Dane-Ericson/ec422_ps4_Ericson>
 
 ```{r}
+#|echo: false
 liquor_cv_fit <- readRDS(
   "results/liquor_cv_fit.rds"
 )
@@ -29,7 +30,33 @@ var_results <- readRDS(
 )
 ```
 
+```{r}
+library(tidyverse)
+library(fpp3)
+library(BVAR)
+```
+
 ## ARIMA vs. ETS
+
+```{r}
+#|echo: false
+liquor_raw <- read_csv(
+  "data/MRTSSM4453USN.csv",
+  na = ".",
+  col_types = cols(
+    observation_date = col_date(format = "%Y-%m-%d"),
+    MRTSSM4453USN = col_double()
+  )
+)
+
+#make tsibble
+liquor <- liquor_raw |>
+  transmute(Month = yearmonth(observation_date), sales = MRTSSM4453USN) |>
+  as_tsibble(index = Month) |>
+  filter(Month <= yearmonth("2019 Dec"))
+
+has_gaps(liquor)
+```
 
 ```{r}
 #| echo: false
@@ -166,6 +193,7 @@ actual <- y[121:N, ]
 We will produce 120 forecasts for each variable, and our first forecast will be in Q1 of 1990, while our last forecast is in Q4 of 2019.
 
 ```{r}
+
 var_ols_fc <- function(z, p) {
   e <- embed(z, p + 1)            # columns: y_t, then its lags 1 to p
   M <- ncol(z)                    # number of variables
@@ -180,6 +208,9 @@ for (T in origins) {
   fc_var1 <- rbind(fc_var1, var_ols_fc(y[1:T, ], 1))
   fc_var4 <- rbind(fc_var4, var_ols_fc(y[1:T, ], 4))
 }
+
+
+rmse_by_var <- function(f) sqrt(colMeans((actual - f)^2))
 
 rmse_by_var(fc_var1)
 rmse_by_var(fc_var4)
