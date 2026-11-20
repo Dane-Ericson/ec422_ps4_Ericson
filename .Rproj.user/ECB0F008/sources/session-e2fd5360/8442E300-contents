@@ -40,17 +40,19 @@ liquor_fit <- liquor |>
 liquor_fit |> select(arima) |> report()
 liquor_fit |> select(ets) |> report()
 
-# An ARIMA(1,0,2)(2,1,1) specification was chosen for the ARIMA model, meaning it was seasonally differenced 1 time and nonseasonally differneced 0 times, while an ETS(A,A,A) model was chosen for the ETS model, meaning the error, trend, and soasonal compontents are all additive.
+#An ARIMA(1,0,2)(2,1,1) specification was chosen for the ARIMA model, meaning it was seasonally differenced 1 time and non-seasonally differenced 0 times, while an ETS(A,A,A) model was chosen for the ETS model, meaning the error, trend, and seasonal components are all additive.
 
-liquor_fit |> select(arima) |> gg_tsresiduals()
 
 #2.2b
+liquor_fit |> select(arima) |> gg_tsresiduals()
+
+
 liquor_fit |>
   select(arima) |>
   augment() |>
   features(.innov, ljung_box, lag = 24, dof = 6)
 
-# The ljung-box test p-value is 0, meaning we should reject the H0 of white noise residuals and that there is likely remaining autocorrelation struture we could capture.
+#The ljung-box test p-value is 0, meaning we should reject the H0 of white noise residuals and that there is likely remaining autocorrelation structure we could capture.
 
 #2.3
 
@@ -76,7 +78,7 @@ liquor_cv_fc |>
   accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE)) |> knitr::kable(digits = 2)
 
 
-#The first forecast should be in January 2002, while the last should be in December 2019. Both metrics agree that the ARIMA model foretasted the most accurately. 
+#The first forecast should be in January 2002, while the last should be in December 2019. Both metrics agree that the ARIMA model forecasted the most accurately. 
 
 
 liquor_errs <- liquor_cv_fc |>
@@ -297,8 +299,6 @@ pc <- prcomp(scale(Z))
 
 summary(pc)$importance[, 1:5]
 
-summary(pc)$importance[
-  "Cumulative Proportion", 3]
 
 #The first three factors explain 29.45 percent of the variance.
 
@@ -362,8 +362,6 @@ direct_race <- function(series, h = 12, r = 3) {
          DM_pvalue = forecast::dm.test(e_ar, e_fa, h = h, power = 2,
                                        varestimator = "bartlett")$p.value)
 }
-
-direct_race("CPIAUCSL")
 
 direct_race("CPIAUCSL") |>
   print(width = Inf)

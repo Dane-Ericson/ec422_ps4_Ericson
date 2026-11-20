@@ -1,0 +1,2 @@
+"0","#| echo: false"
+"0","var_results |> knitr::kable(digits = 3)"

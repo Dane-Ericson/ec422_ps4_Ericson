@@ -1,0 +1,2 @@
+"0","gg_season(liquor, log(sales)) +"
+"0","  labs(title = ""Seasonal plot: Monthly US liquor sales"", y = ""Sales (millions of dollars)"", x = ""Month"")"

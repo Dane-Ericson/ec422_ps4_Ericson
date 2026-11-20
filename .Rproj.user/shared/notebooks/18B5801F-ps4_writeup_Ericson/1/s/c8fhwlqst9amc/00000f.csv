@@ -1,0 +1,6 @@
+"0","liquor_combo_fc <- liquor_cv_fit |>"
+"0","  mutate(combo = (arima + ets) / 2) |>"
+"0","  forecast(h = 1)"
+"0",""
+"0","liquor_combo_fc |>"
+"0","  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE)) |> knitr::kable(digits = 2)"

@@ -1,0 +1,7 @@
+"0","F1 <- pc$x[, 1] * sign(cor(pc$x[, 1], fm$INDPRO))"
+"0",""
+"0","tibble(date = fm$date, F1 = F1) |>"
+"0","  ggplot(aes(date, F1)) +"
+"0","  geom_line() +"
+"0","  labs(title = ""First Factor from FRED-MD"", x = NULL, y = NULL) +"
+"0","  theme_minimal()"
